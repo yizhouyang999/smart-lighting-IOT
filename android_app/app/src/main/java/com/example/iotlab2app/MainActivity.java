@@ -52,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 x+=line;
                 System.out.println(x);
-
             }
             System.out.println("ExitCode: " + sess.getExitStatus());
             sess.close();
