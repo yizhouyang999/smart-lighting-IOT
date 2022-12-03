@@ -1,4 +1,4 @@
-package com.example.android_app;
+package com.example.iotlab2app;
 
 import org.junit.Test;
 

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">android_app</string>
+    <string name="app_name">IoTLab2App</string>
     <string name="txv_title_temp">Smart Home</string>
     <string name="txv_indoor_temp">Indoor temperature:</string>
     <string name="txv_indoor_temp_show">11.11</string>
