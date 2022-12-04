@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">android_app</string>
+    <string name="app_name">Smart Light</string>
     <string name="txv_title_temp">Smart Light</string>
     <string name="txv_indoor_temp">Light Status:</string>
     <string name="txv_indoor_temp_show">Turn off</string>

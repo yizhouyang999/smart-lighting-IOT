@@ -9,9 +9,11 @@
     <color name="white">#FFFFFFFF</color>
     <color name="black_alpha">#000000</color>
     <color name="text_box_background">#E7E7E7</color>
-    <color name="blue_text">#0166ff</color>
+    <color name="blue_text">#273036</color>
     <color name="title_bar_color">#EB164E</color>
     <color name="activitybackground">#ccf0f0</color>
     <color name="activityfont">#3f3f3f</color>
     <color name="colorPrimary">#3f3f3f</color>
+    <color name="buttonColor">#ff8d75</color>
+    <color name="theme">#ff8d90</color>
 </resources>

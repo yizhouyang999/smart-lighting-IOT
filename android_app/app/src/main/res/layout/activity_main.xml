@@ -3,8 +3,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/activitybackground">
-    <TextView android:id="@+id/title" android:layout_width="fill_parent" android:layout_height="wrap_content" android:padding="10dip" android:gravity="center" android:text="@string/txv_title_temp" android:textColor="@color/black_alpha" android:textSize="30sp"/>
+    android:background="@drawable/wave">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -91,7 +90,18 @@
 
     <LinearLayout android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:padding="5dip"> </LinearLayout>
     <LinearLayout android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:padding="5dip">
-        <Button android:id="@+id/btnUpdateTemp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="20dp" android:background="@color/colorPrimary" android:padding="5dip" android:text=" Update temperature " android:textAllCaps="false" android:textColor="#FFFFFF" android:textSize="17sp"/>
+
+        <Button
+            android:id="@+id/btnUpdateTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:background="@color/buttonColor"
+            android:padding="5dip"
+            android:text=" Update Something "
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp" />
     </LinearLayout>
     <LinearLayout android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:padding="5dip"> </LinearLayout>
 
