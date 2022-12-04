@@ -65,28 +65,57 @@ public class MainActivity extends AppCompatActivity {
     TextView txv_temp_indoor = null;
     Switch lightToggle = null;
     Button btnUpdateTemp = null;
+    Switch lightMode=null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         txv_temp_indoor = (TextView) findViewById(R.id.indoorTempShow);
-        txv_temp_indoor.setText("the fetched indoor temp value");
+
 
         lightToggle = (Switch) findViewById(R.id.btnToggle);
+        lightMode=(Switch) findViewById(R.id.smartLightButton) ;
         lightToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){
-                    // do something
-
+                    lightMode.setChecked(true);
                 }
                 else{
-                    // do something
+                    if(!lightMode.isChecked()){
+                        txv_temp_indoor.setText("turn off");
+                    }
+                    else{
+                        lightMode.setChecked(false);
+                    }
+                }
+            }
+        });
+        lightMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    if(!lightToggle.isChecked()){
+                        lightMode.setChecked(false);
+                    }
+                    else{
+                        txv_temp_indoor.setText("smart");
+                    }
+                }
+                else{
+                    if(!lightToggle.isChecked()){
+                        txv_temp_indoor.setText("turn off");
+                    }
+                    else{
+                        txv_temp_indoor.setText("static");
+                    }
 
                 }
             }
         });
+
 
         btnUpdateTemp = (Button) findViewById(R.id.btnUpdateTemp);
         btnUpdateTemp.setOnClickListener(new View.OnClickListener() {
