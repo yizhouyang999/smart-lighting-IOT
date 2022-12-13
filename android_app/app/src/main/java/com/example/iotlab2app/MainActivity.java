@@ -5,11 +5,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.BufferedReader;
 import java.io.Console;
@@ -23,8 +30,56 @@ import ch.ethz.ssh2.StreamGobbler;
 
 public class MainActivity extends AppCompatActivity {
     String x = "";
+    TextView txv_temp_indoor = null;
+    Switch lightToggle = null;
+    Button btnUpdateTemp = null;
+    Switch lightMode = null;
 
-    public void run (String command) {
+    /**
+     * variables for Mqtt
+     */
+    private MqttAndroidClient client;
+    private static final String SERVER_URI = "tcp://test.mosquitto.org:1883";
+    private static final String TAG = "MainActivity";
+
+
+    /**
+     * connect to the set broker
+     */
+    private void connect(){
+        String clientId = MqttClient.generateClientId();
+        client =
+                new MqttAndroidClient(this.getApplicationContext(), SERVER_URI,
+                        clientId);
+        try {
+            IMqttToken token = client.connect();
+            token.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    // We are connected
+                    Log.d(TAG, "onSuccess");
+                    System.out.println(TAG + " Success. Connected to " + SERVER_URI);
+                }
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception)
+                {
+                    Log.d(TAG, "onFailure");
+                    System.out.println(TAG + " Oh no! Failed to connect to " +
+                            SERVER_URI);
+                }
+            });
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * Connect to raspberry pi
+     *
+     * @param command
+     */
+    public void run(String command) {
         StrictMode.ThreadPolicy policy = new
                 StrictMode.ThreadPolicy.Builder()
                 .permitAll().build();
@@ -33,8 +88,7 @@ public class MainActivity extends AppCompatActivity {
         String username = "pi";
         String password = "IoT@2021";
 
-        try
-        {
+        try {
             Connection conn = new Connection(hostname);
             conn.connect();
             boolean isAuthenticated = conn.authenticateWithPassword(username,
@@ -46,45 +100,49 @@ public class MainActivity extends AppCompatActivity {
             InputStream stdout = new StreamGobbler(sess.getStdout());
             BufferedReader br = new BufferedReader(new InputStreamReader(stdout));
             x = "";
-            while (true){
+            while (true) {
                 String line = br.readLine();
                 if (line == null)
                     break;
-                x+=line;
+                x += line;
                 System.out.println(x);
             }
             System.out.println("ExitCode: " + sess.getExitStatus());
             sess.close();
             conn.close();
-        }
-        catch (IOException e)
-        { e.printStackTrace(System.err);
+        } catch (IOException e) {
+            e.printStackTrace(System.err);
         }
     }
 
-    TextView txv_temp_indoor = null;
-    Switch lightToggle = null;
-    Button btnUpdateTemp = null;
-    Switch lightMode=null;
 
+    /**
+     * main method
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         txv_temp_indoor = (TextView) findViewById(R.id.indoorTempShow);
-
-
         lightToggle = (Switch) findViewById(R.id.btnToggle);
-        lightMode=(Switch) findViewById(R.id.smartLightButton) ;
+        lightMode = (Switch) findViewById(R.id.smartLightButton);
+        btnUpdateTemp = (Button) findViewById(R.id.btnUpdateTemp);
+
+//        connect();
+
+        /**
+         * Listen to the light switch
+         */
         lightToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
                     lightMode.setChecked(true);
-                }
-                else{
-                    if(!lightMode.isChecked()){
+                } else {
+                    if (!lightMode.isChecked()) {
 //                        new AsyncTask<Integer, Void, Void>(){
 //                            @Override
 //                            protected Void doInBackground(Integer... params) {
@@ -94,21 +152,24 @@ public class MainActivity extends AppCompatActivity {
 //                            }
 //                        }.execute(1);
                         txv_temp_indoor.setText("turn off");
-                    }
-                    else{
+                    } else {
                         lightMode.setChecked(false);
                     }
                 }
             }
         });
+
+
+        /**
+         * Listen to the mode switch
+         */
         lightMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
-                    if(!lightToggle.isChecked()){
+                if (isChecked) {
+                    if (!lightToggle.isChecked()) {
                         lightMode.setChecked(false);
-                    }
-                    else{
+                    } else {
 //                        new AsyncTask<Integer, Void, Void>(){
 //                            @Override
 //                            protected Void doInBackground(Integer... params) {
@@ -119,9 +180,8 @@ public class MainActivity extends AppCompatActivity {
 //                        }.execute(1);
                         txv_temp_indoor.setText("auto");
                     }
-                }
-                else{
-                    if(!lightToggle.isChecked()){
+                } else {
+                    if (!lightToggle.isChecked()) {
 //                        new AsyncTask<Integer, Void, Void>(){
 //                            @Override
 //                            protected Void doInBackground(Integer... params) {
@@ -131,8 +191,7 @@ public class MainActivity extends AppCompatActivity {
 //                            }
 //                        }.execute(1);
                         txv_temp_indoor.setText("turn off");
-                    }
-                    else{
+                    } else {
 //                        new AsyncTask<Integer, Void, Void>(){
 //                            @Override
 //                            protected Void doInBackground(Integer... params) {
@@ -149,18 +208,21 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        btnUpdateTemp = (Button) findViewById(R.id.btnUpdateTemp);
+        /**
+         * Listen to the button
+         */
         btnUpdateTemp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Add code
-                new AsyncTask<Integer, Void, Void>(){
+                new AsyncTask<Integer, Void, Void>() {
                     @Override
                     protected Void doInBackground(Integer... params) {
                         // Add code to fetch data via SSH
 
                         return null;
                     }
+
                     @Override
                     protected void onPostExecute(Void v) {
 
@@ -172,9 +234,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
-
-
-
 
 
 }
