@@ -83,3 +83,9 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+
+
+
+
+# python cache
+__pycache__/
