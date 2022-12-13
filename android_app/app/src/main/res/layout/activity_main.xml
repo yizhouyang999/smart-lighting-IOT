@@ -96,12 +96,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
-            android:background="@color/buttonColor"
             android:padding="5dip"
             android:text=" Update Something "
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
-            android:textSize="17sp" />
+            android:textSize="17sp"
+            />
+<!--            android:background="@color/buttonColor"-->
     </LinearLayout>
     <LinearLayout android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:padding="5dip"> </LinearLayout>
 
