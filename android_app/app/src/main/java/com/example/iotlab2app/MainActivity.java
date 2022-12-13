@@ -35,8 +35,8 @@ public class MainActivity extends AppCompatActivity {
 
         try
         {
-            Connection conn = new Connection(hostname); //init connection
-            conn.connect(); //start connection to the hostname
+            Connection conn = new Connection(hostname);
+            conn.connect();
             boolean isAuthenticated = conn.authenticateWithPassword(username,
                     password);
             if (isAuthenticated == false)
@@ -85,6 +85,14 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else{
                     if(!lightMode.isChecked()){
+//                        new AsyncTask<Integer, Void, Void>(){
+//                            @Override
+//                            protected Void doInBackground(Integer... params) {
+//                                // Add code to fetch data via SSH
+//                                run("python mode.py off");
+//                                return null;
+//                            }
+//                        }.execute(1);
                         txv_temp_indoor.setText("turn off");
                     }
                     else{
@@ -101,14 +109,38 @@ public class MainActivity extends AppCompatActivity {
                         lightMode.setChecked(false);
                     }
                     else{
-                        txv_temp_indoor.setText("smart");
+//                        new AsyncTask<Integer, Void, Void>(){
+//                            @Override
+//                            protected Void doInBackground(Integer... params) {
+//                                // Add code to fetch data via SSH
+//                                run("python mode.py auto");
+//                                return null;
+//                            }
+//                        }.execute(1);
+                        txv_temp_indoor.setText("auto");
                     }
                 }
                 else{
                     if(!lightToggle.isChecked()){
+//                        new AsyncTask<Integer, Void, Void>(){
+//                            @Override
+//                            protected Void doInBackground(Integer... params) {
+//                                // Add code to fetch data via SSH
+//                                run("python mode.py off");
+//                                return null;
+//                            }
+//                        }.execute(1);
                         txv_temp_indoor.setText("turn off");
                     }
                     else{
+//                        new AsyncTask<Integer, Void, Void>(){
+//                            @Override
+//                            protected Void doInBackground(Integer... params) {
+//                                // Add code to fetch data via SSH
+//                                run("python mode.py on");
+//                                return null;
+//                            }
+//                        }.execute(1);
                         txv_temp_indoor.setText("static");
                     }
 
