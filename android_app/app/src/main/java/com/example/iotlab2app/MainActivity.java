@@ -14,9 +14,12 @@ import android.widget.TextView;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.BufferedReader;
 import java.io.Console;
@@ -42,11 +45,37 @@ public class MainActivity extends AppCompatActivity {
     private static final String SERVER_URI = "tcp://test.mosquitto.org:1883";
     private static final String TAG = "MainActivity";
 
+    /**
+     * subscribe in the client
+     *
+     * @param topicToSubscribe
+     */
+    private void subscribe(String topicToSubscribe) {
+        final String topic = topicToSubscribe;
+        int qos = 1;
+        try {
+            IMqttToken subToken = client.subscribe(topic, qos);
+            subToken.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    System.out.println("Subscription successful to topic: " + topic);
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken,
+                                      Throwable exception) {
+                    System.out.println("Failed to subscribe to topic: " + topic);
+                }
+            });
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * connect to the set broker
      */
-    private void connect(){
+    private void connect() {
         String clientId = MqttClient.generateClientId();
         client =
                 new MqttAndroidClient(this.getApplicationContext(), SERVER_URI,
@@ -60,9 +89,9 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "onSuccess");
                     System.out.println(TAG + " Success. Connected to " + SERVER_URI);
                 }
+
                 @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception)
-                {
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
                     Log.d(TAG, "onFailure");
                     System.out.println(TAG + " Oh no! Failed to connect to " +
                             SERVER_URI);
@@ -131,7 +160,38 @@ public class MainActivity extends AppCompatActivity {
         lightMode = (Switch) findViewById(R.id.smartLightButton);
         btnUpdateTemp = (Button) findViewById(R.id.btnUpdateTemp);
 
+        /**
+         * Connect and get from Mqtt broker
+         */
 //        connect();
+//        client.setCallback(new MqttCallbackExtended() {
+//            @Override
+//            public void connectComplete(boolean reconnect, String serverURI) {
+//                if (reconnect) {
+//                    System.out.println("Reconnected to : " + serverURI);
+//                    // Re-subscribe as we lost it due to new session
+//                    subscribe("iotlab/test");
+//                } else {
+//                    System.out.println("Connected to: " + serverURI);
+//                    subscribe("iotlab/test");
+//                }
+//            }
+//            @Override
+//            public void connectionLost(Throwable cause) {
+//                System.out.println("The Connection was lost.");
+//            }
+//            @Override
+//            public void messageArrived(String topic, MqttMessage message) throws
+//                    Exception {
+//                String newMessage = new String(message.getPayload());
+//                //System.out.println("Incoming message: " + newMessage);
+//                String[] values = newMessage.split(",");
+//                System.out.println("Lux: " + values[0] + "\t Prox: "+values[1]);
+//            }
+//            @Override
+//            public void deliveryComplete(IMqttDeliveryToken token) {
+//            }
+//        });
 
         /**
          * Listen to the light switch
