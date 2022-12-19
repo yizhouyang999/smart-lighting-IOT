@@ -1,35 +1,29 @@
 import os
 import time
 from rich import print
-lines = []
-logs = []
-logging = False
+from rich.markdown import Markdown
+from rich.panel import Panel
+from rich.columns import Columns
+from rich.bar import Bar
 
-def toggle_logging():
-    global logging
-    logging = not logging
-    print_data()
-	
-def print_data():
+lines = []
+title = Panel("[blue]Smart Hallway Lighting", title="[grey74]IoT Project[/grey74]",subtitle="[grey35]David Grawe, Yizhou Yang" ,expand=True)
+title.border_style = "grey35"
+title.subtitle_align = "right"
+title.padding= (1,4)
+
+def print_data(mode = "", sensor = 0.5, domain = "", lights = "", threads = ""):
 	os.system('cls' if os.name == 'nt' else 'clear')
+	print(title)
+	print(Columns([
+		Panel(mode, title="Mode"),
+		Panel(domain,style = "grey35" , title="Domain"),
+		Panel(f"Value: {sensor}", title="Sensor"),
+		Panel(threads, style= "grey35", title = "Threads")], expand=True),
+		Panel(Bar(1,sensor-0.01,sensor+0.01), title="Sensor"))
+	print(Panel(lights,border_style="grey74" , title="Lights"))
 	for line in lines:
 		print(line)
-	if logging:
-		print("\n","#"*20,"MQTT LOGS","#"*20,"\n")
-		for line in logs:
-			print(line)
-
-def lines_add(x, list = lines):
-	list.append(x)
+def lines_add(x):
+	lines.append(x)
 	print_data()
-
-def log_add(s):
-	logs.append(s)
-	if logging:
-		print(s)
-def end():
-    if logging:
-        with open(f"logs/log{hash(time.time())}.log","w") as file:
-            file.write(f'''{time.asctime()}:\n\n''')
-            for line in logs:
-            	file.write(line+"\n")
