@@ -28,7 +28,7 @@ class change_notifier:
 m = change_notifier("")
 s = change_notifier(0)
 d = "---"
-l = change_notifier("")
+l = change_notifier(lights.lights)
 th = "Not initiated"
 
 # easy way to refresh console
@@ -59,26 +59,45 @@ reading_data = change_notifier(True)
 reading_delay = 0.1
 
 def read_data():
+	'''Reads data from sensor and updates UI if necessary'''
 	if s.set(sensor.get_proximity()):
-		lock.acquire()
 		refresh()
-		lock.release()
 
 th = "Sensor initiated"
 
-#### Lights ####
+#### Calculation ####
 light_data = change_notifier(True)
 light_delay = 0.1
 
-def light():
-	return
-
+def calc():
+	pos = s.get()
+	f5 = False
+	for light in lights.lights:
+		if light.illuminate(pos) and not light.on:
+			light.turn("On")
+			f5 = True
+		elif not light.illuminate(pos) and light.on:
+			light.turn("Off")
+			f5 = True
+	if f5:
+		refresh()
 th = "Lights initiated"
+
+move_data = change_notifier(False)
+move_delay = 1
+
+dir = 1
+def move_pos():
+	global dir
+	if s.get()+0.05 > 1:
+		dir = -1
+	elif s.get()-0.05 < 0:
+		dir = 1
+	s.set(s.get()+dir*0.04)
 
 ################# Functions ####################
 
 def ui():
-	console_ui.lines_add("Enter 'exit' to exit, enter 'on', 'off' or 'auto' to change mode or enter a float to change sensor value while debugging:")
 	while True:
 		string = input()
 		if string == "exit":
@@ -89,7 +108,7 @@ def ui():
 			mode.set(string)
 			lock.release()
 			refresh()
-		elif string == "refresh":
+		elif string == "r":
 			refresh()
 		# just for debugging
 		else:
@@ -122,12 +141,23 @@ if __name__ == "__main__":
 	# Threads
 	th = "Setting up threads"
 	sender = threading.Thread(target=loop, args=(send_data, sending_data, sending_delay))
+	proximity = threading.Thread(target=loop, args=(read_data, reading_data, reading_delay))
+	light = threading.Thread(target=loop, args=(calc, light_data, light_delay))
+	pong = threading.Thread(target=loop, args=(move_pos, move_data, move_delay))
 
 	# Start threads
+
+	sending_data.set(True)
+	reading_data.set(True)
+	light_data.set(True)
+	move_data.set(False)
+	
 	th = "Starting threads"
 	refresh()
-	time.sleep(1)
 	sender.start()
+	# proximity.start()
+	light.start()
+	pong.start()
 	th = "Threads started"
 	refresh()
 
@@ -142,6 +172,7 @@ if __name__ == "__main__":
 	sending_data.set(False)
 	reading_data.set(False)
 	light_data.set(False)
+	move_data.set(False)
 	# wait for threads to stop
 	sender.join()
 	th = "Threads stopped"

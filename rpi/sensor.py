@@ -13,5 +13,5 @@ def __set__(x):
 def get_proximity():
 	# if p != None:
 	return p
-	# return sensor.proximity # The higher the value, object closer to sensor
+	# return sensor.proximity/65535 # The higher the value, object closer to sensor
 	
