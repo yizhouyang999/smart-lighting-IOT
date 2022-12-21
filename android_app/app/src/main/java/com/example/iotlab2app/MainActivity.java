@@ -7,11 +7,15 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -230,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
                 if (isChecked) {
                     if (!lightToggle.isChecked()) {
                         lightMode.setChecked(false);
+                        showToastFailed();
                     } else {
 //                        new AsyncTask<Integer, Void, Void>(){
 //                            @Override
@@ -306,6 +311,18 @@ public class MainActivity extends AppCompatActivity {
 //        });
 
     }
+
+    public void showToastFailed(){
+        LayoutInflater inflater=getLayoutInflater();
+        View layout=inflater.inflate(R.layout.mode_fail,(ViewGroup) findViewById(R.id.mode_fail_root));
+        Toast toast=new Toast(getApplicationContext());
+        toast.setGravity(Gravity.BOTTOM,0,400);
+        toast.setDuration(Toast.LENGTH_SHORT);
+        toast.setView(layout);
+
+        toast.show();
+    }
+
     public void openLoginActivity() {
         Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);
