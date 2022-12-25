@@ -31,6 +31,7 @@ import java.io.Console;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
 
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.Session;
@@ -42,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     Switch lightToggle = null;
     Button btnUpdateTemp = null;
     Switch lightMode = null;
+
+    ModeDialog modeDialog=new ModeDialog();
 
     /**
      * variables for Mqtt
@@ -281,6 +284,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // Add code
                 openLoginActivity();
+//                modeDialog.show(getSupportFragmentManager(),"dialog");
 
             }
         });
