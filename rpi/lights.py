@@ -6,7 +6,6 @@ token =     "8aba8385b6f65e0f7bf274e5e673f04b05d541a1e" # Token
 secret =    "ecd6a7203c64ec98469df1da577eeff3" # Token Secret
 lights = []
 comfort = 0.05
-area = (0,1)
 debug = True
 
 # define a Light class to represent each light
@@ -17,7 +16,6 @@ class Light:
         self.radius = radius
         self.position = position
         self.on = on
-        self.max = area[1]
     
     def isOn(self):
         return self.on

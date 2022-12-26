@@ -83,6 +83,8 @@ def calc():
 		refresh()
 th = "Lights initiated"
 
+
+### Pong ###
 move_data = change_notifier(False)
 move_delay = 1
 
@@ -111,6 +113,10 @@ def ui():
 		elif string == "r":
 			refresh()
 		# just for debugging
+		elif string == "pong":
+			move_data.set(not move_data.get())
+			pong = threading.Thread(target=loop, args=(move_pos, move_data, move_delay))
+			pong.start()
 		else:
 			try:
 				num = float(string)
