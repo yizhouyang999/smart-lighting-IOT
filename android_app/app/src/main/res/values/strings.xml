@@ -2,8 +2,8 @@
     <string name="app_name">SMART LIGHT</string>
     <string name="txv_title_temp">SMART LIGHT</string>
     <string name="txv_indoor_temp">Light Status:</string>
-    <string name="txv_indoor_temp_show">Turn off</string>
-    <string name="txv_outdoor_light">Lighting:</string>
+    <string name="txv_indoor_temp_show">off</string>
+    <string name="txv_outdoor_light">Light:</string>
     <string name="smart_light">Smart Mode:</string>
     <string name="txv_outdoor_light_show">Off</string>
     <string name="txv_outdoor_light_on">On</string>

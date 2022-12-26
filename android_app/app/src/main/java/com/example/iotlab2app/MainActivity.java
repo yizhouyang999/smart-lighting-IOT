@@ -2,15 +2,20 @@ package com.example.iotlab2app;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -26,6 +31,7 @@ import java.io.Console;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
 
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.Session;
@@ -37,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     Switch lightToggle = null;
     Button btnUpdateTemp = null;
     Switch lightMode = null;
+
+    ModeDialog modeDialog=new ModeDialog();
 
     /**
      * variables for Mqtt
@@ -163,35 +171,35 @@ public class MainActivity extends AppCompatActivity {
         /**
          * Connect and get from Mqtt broker
          */
-//        connect();
-//        client.setCallback(new MqttCallbackExtended() {
-//            @Override
-//            public void connectComplete(boolean reconnect, String serverURI) {
-//                if (reconnect) {
-//                    System.out.println("Reconnected to : " + serverURI);
-//                    // Re-subscribe as we lost it due to new session
-//                    subscribe("iotlab/test");
-//                } else {
-//                    System.out.println("Connected to: " + serverURI);
-//                    subscribe("iotlab/test");
-//                }
-//            }
-//            @Override
-//            public void connectionLost(Throwable cause) {
-//                System.out.println("The Connection was lost.");
-//            }
-//            @Override
-//            public void messageArrived(String topic, MqttMessage message) throws
-//                    Exception {
-//                String newMessage = new String(message.getPayload());
-//                //System.out.println("Incoming message: " + newMessage);
-//                String[] values = newMessage.split(",");
-//                System.out.println("Lux: " + values[0] + "\t Prox: "+values[1]);
-//            }
-//            @Override
-//            public void deliveryComplete(IMqttDeliveryToken token) {
-//            }
-//        });
+        connect();
+        client.setCallback(new MqttCallbackExtended() {
+            @Override
+            public void connectComplete(boolean reconnect, String serverURI) {
+                if (reconnect) {
+                    System.out.println("Reconnected to : " + serverURI);
+                    // Re-subscribe as we lost it due to new session
+                    subscribe("iotlab/test");
+                } else {
+                    System.out.println("Connected to: " + serverURI);
+                    subscribe("iotlab/test");
+                }
+            }
+            @Override
+            public void connectionLost(Throwable cause) {
+                System.out.println("The Connection was lost.");
+            }
+            @Override
+            public void messageArrived(String topic, MqttMessage message) throws
+                    Exception {
+                String newMessage = new String(message.getPayload());
+                //System.out.println("Incoming message: " + newMessage);
+                String[] values = newMessage.split(",");
+                System.out.println("Lux: " + values[0] + "\t Prox: "+values[1]);
+            }
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken token) {
+            }
+        });
 
         /**
          * Listen to the light switch
@@ -211,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
 //                                return null;
 //                            }
 //                        }.execute(1);
-                        txv_temp_indoor.setText("turn off");
+                        txv_temp_indoor.setText("off");
                     } else {
                         lightMode.setChecked(false);
                     }
@@ -229,6 +237,7 @@ public class MainActivity extends AppCompatActivity {
                 if (isChecked) {
                     if (!lightToggle.isChecked()) {
                         lightMode.setChecked(false);
+                        showToastFailed();
                     } else {
 //                        new AsyncTask<Integer, Void, Void>(){
 //                            @Override
@@ -250,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
 //                                return null;
 //                            }
 //                        }.execute(1);
-                        txv_temp_indoor.setText("turn off");
+                        txv_temp_indoor.setText("off");
                     } else {
 //                        new AsyncTask<Integer, Void, Void>(){
 //                            @Override
@@ -260,13 +269,12 @@ public class MainActivity extends AppCompatActivity {
 //                                return null;
 //                            }
 //                        }.execute(1);
-                        txv_temp_indoor.setText("static");
+                        txv_temp_indoor.setText("on");
                     }
 
                 }
             }
         });
-
 
         /**
          * Listen to the button
@@ -275,24 +283,53 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Add code
-                new AsyncTask<Integer, Void, Void>() {
-                    @Override
-                    protected Void doInBackground(Integer... params) {
-                        // Add code to fetch data via SSH
+                openLoginActivity();
+//                modeDialog.show(getSupportFragmentManager(),"dialog");
 
-                        return null;
-                    }
-
-                    @Override
-                    protected void onPostExecute(Void v) {
-
-
-                    }
-
-                }.execute(1);
             }
         });
 
+//        /**
+//         * Listen to the button
+//         */
+//        btnUpdateTemp.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                // Add code
+//                new AsyncTask<Integer, Void, Void>() {
+//                    @Override
+//                    protected Void doInBackground(Integer... params) {
+//                        // Add code to fetch data via SSH
+//
+//                        return null;
+//                    }
+//
+//                    @Override
+//                    protected void onPostExecute(Void v) {
+//
+//
+//                    }
+//
+//                }.execute(1);
+//            }
+//        });
+
+    }
+
+    public void showToastFailed(){
+        LayoutInflater inflater=getLayoutInflater();
+        View layout=inflater.inflate(R.layout.mode_fail,(ViewGroup) findViewById(R.id.mode_fail_root));
+        Toast toast=new Toast(getApplicationContext());
+        toast.setGravity(Gravity.BOTTOM,0,400);
+        toast.setDuration(Toast.LENGTH_SHORT);
+        toast.setView(layout);
+
+        toast.show();
+    }
+
+    public void openLoginActivity() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
     }
 
 
