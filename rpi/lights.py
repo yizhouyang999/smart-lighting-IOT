@@ -1,21 +1,22 @@
-import requests, json, hashlib, uuid, time
+import requests, uuid, time#, json, hashlib
 # This is where to insert your generated API keys (http://api.telldus.com/keys)
+# define keys, tokens and secrets
 pubkey =    "FEHUVEW84RAFR5SP22RABURUPHAFRUNU" # Public Key
 privkey =   "ZUXEVEGA9USTAZEWRETHAQUBUR69U6EF" # Private Key
 token =     "8aba8385b6f65e0f7bf274e5e673f04b05d541a1e" # Token
 secret =    "ecd6a7203c64ec98469df1da577eeff3" # Token Secret
-lights = []
-comfort = 0.05
-debug = True
 
-# define a Light class to represent each light
+
+
+lights = []
 class Light:
-    def __init__(self, id, position, radius, on = None):
+    def __init__(self, id, position, radius, on = False, comfort = 0.05):
         '''Initiates a light with id, position and radius'''
         self.id = id
         self.radius = radius
         self.position = position
         self.on = on
+        self.comfort = comfort
     
     def isOn(self):
         return self.on
@@ -33,10 +34,6 @@ class Light:
             return
 
         self.on = b
-        # don't do anything if debug is True
-        if debug:
-            return
-        # Connect to tellstick and turn light on/off
         localtime = time.localtime(time.time())
         timestamp = str(time.mktime(localtime))
         nonce = uuid.uuid4().hex
@@ -49,8 +46,8 @@ class Light:
         responseData = response.json()  
 
     def illuminate(self, pos):
-        if self.position - self.radius - comfort < pos < self.position + self.radius+ comfort:
-            return True
+        should_be_on = self.position - self.radius < pos + self.comfort and pos - self.comfort < self.position + self.radius
+        self.turn("On" if should_be_on else "Off")
 
 
 with open("lights.txt") as f:
@@ -62,9 +59,7 @@ with open("lights.txt") as f:
 
 
 def getLightsState():
-    if debug:
-        return
-
+    
     localtime = time.localtime(time.time())
     timestamp = str(time.mktime(localtime))
     nonce = uuid.uuid4().hex

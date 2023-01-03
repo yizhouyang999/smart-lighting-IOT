@@ -1,49 +1,76 @@
 ############### MQTT section ##################
 import paho.mqtt.client as pm
-import time
-import os
 import logging
 
-
+logging.basicConfig(filename="logs/mqtt.log", level=logging.INFO, format="%(asctime)s: %(message)s", filemode='w')
+logger = logging.getLogger()
 class mqtt_server:
-	def __init__(self, broker, pub_topic):
-		logging.basicConfig(filename="logs/mqtt.log", level=logging.INFO, format="%(asctime)s: %(message)s", filemode='w')
-		self.logger = logging.getLogger()
-		self.logger.info("Starting MQTT client")
+	def __init__(self, broker = None, pub_topic = None):
 		# Set MQTT broker and topic
 		self.broker = broker
 		self.pub_topic = pub_topic
 		# make client
 		self.client = None
+		logger.info(f"Initiated with broker={broker}, pub_topic={pub_topic}")
 	# override logging functions
 	def start(self):
 		self.client = pm.Client()
-		self.client.connect(self.broker)	# Broker address, port and keepalive (maximum period in seconds allowed between communications with the broker)
-		self.client.loop_start()
+
 		def on_connect(client, userdata, flags, rc):
 			if rc==0:
-				self.logger.info("Connection established. Code: "+str(rc))
+				logger.info("Connection established. Code: "+str(rc))
 			else:
-				self.logger.error("Connection failed. Code: " + str(rc))
+				logger.error("Connection failed. Code: " + str(rc))
 				
 		self.client.on_connect = on_connect
 				
 		def on_publish(client, userdata, mid):
-			self.logger.info("Published: " + str(mid)+"\n")
-			client.on_publish = on_publish
+			logger.info("Published: " + str(mid)+"\n")
+
+		self.client.on_publish = on_publish
 			
 		def on_disconnect(client, userdata, rc):
 			if rc != 0:
-				self.logger.error("Unexpected disonnection. Code: ", str(rc))
+				logger.error("Unexpected disonnection. Code: ", str(rc))
 			else:
-				self.logger.info("Disconnected. Code: " + str(rc))
-			client.on_disconnect = on_disconnect
+				logger.info("Disconnected. Code: " + str(rc))
+
+		self.client.on_disconnect = on_disconnect
 			
 		def on_log(client, userdata, level, buf):		# Message is in buf
-			self.logger.info("MQTT Log: " + str(buf))
-			client.on_log = on_log
-		self.logger.info("MQTT client started")
+			logger.info("MQTT Log: " + str(buf))
+			
+		self.client.on_log = on_log
+
+		self.client.connect(self.broker)	# Broker address, port and keepalive (maximum period in seconds allowed between communications with the broker)
+		self.client.loop_start()
+
+		logger.info("MQTT client started")
 
 	def end(self):
 		self.client.loop_stop()
 		self.client.disconnect()
+		logger.info("MQTT client stopped")
+	
+s = mqtt_server("test.mosquitto.org", "iot_project")
+s.start()
+
+def log(string):
+	'''Logs a message to the mqtt log'''
+	logger.info(string)
+
+def publish(string):
+	'''Publishes a message to the mqtt topic'''
+	s.client.publish(s.pub_topic, string)
+
+def broker():
+	'''Returns the broker'''
+	return s.broker
+
+def pub_topic():
+	'''Returns the pub_topic'''
+	return s.pub_topic
+	
+def end():
+	'''Stops the mqtt client'''
+	s.end()
