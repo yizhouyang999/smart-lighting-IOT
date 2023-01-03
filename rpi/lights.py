@@ -10,7 +10,7 @@ secret =    "ecd6a7203c64ec98469df1da577eeff3" # Token Secret
 
 lights = []
 class Light:
-    def __init__(self, id, position, radius, on = False, comfort = 0.05):
+    def __init__(self, id, position, radius, on = False, comfort = 0.05) -> None:
         '''Initiates a light with id, position and radius'''
         self.id = id
         self.radius = radius
@@ -18,11 +18,11 @@ class Light:
         self.on = on
         self.comfort = comfort
     
-    def isOn(self):
+    def isOn(self) -> bool:
         return self.on
 
     
-    def turn(self, state):
+    def turn(self, state:str) -> None:
         # make shure state is "On" or "Off"
         if state not in ["On", "Off"]:
             raise ValueError("state must be either On or Off")
@@ -45,7 +45,7 @@ class Light:
         )
         responseData = response.json()  
 
-    def illuminate(self, pos):
+    def illuminate(self, pos:float) -> None:
         should_be_on = self.position - self.radius < pos + self.comfort and pos - self.comfort < self.position + self.radius
         self.turn("On" if should_be_on else "Off")
 
@@ -58,7 +58,7 @@ with open("lights.txt") as f:
         lights.append(Light(id, float(radius), float(position)))
 
 
-def getLightsState():
+def getLightsState() -> None:
     
     localtime = time.localtime(time.time())
     timestamp = str(time.mktime(localtime))

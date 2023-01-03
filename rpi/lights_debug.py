@@ -1,17 +1,17 @@
 lights = []
 class Light():
-    def __init__(self, id, position, radius, on = False, comfort = 0.05):
+    def __init__(self, id, position, radius, on = False, comfort = 0.05) -> None:
         self.id = id
         self.position = position
         self.radius = radius
         self.on = on
         self.comfort = comfort
         
-    def isOn(self):
+    def isOn(self) -> bool:
         """Returns True if the light is on, False otherwise."""
         return self.on
 
-    def turn(self, state):
+    def turn(self, state:str) -> None:
         """Turns the light On or Off. Accepts "On" or "Off" as arguments."""
         # make shure state is "On" or "Off"
         if state not in ["On", "Off"]:
@@ -20,7 +20,7 @@ class Light():
             self.on = state == "On"
         
 
-    def illuminate(self, pos):
+    def illuminate(self, pos:float) -> None:
         should_be_on = self.position - self.radius < pos + self.comfort and pos - self.comfort < self.position + self.radius
         self.turn("On" if should_be_on else "Off")
 
@@ -33,5 +33,5 @@ with open("lights.txt") as f:
         lights.append(Light(id, float(radius), float(position)))
 
 
-def getLightsState():
+def getLightsState() -> None:
     return

@@ -31,7 +31,7 @@ panel_title = Panel("[blue]Smart Hallway Lighting",
 					expand=True, 
 					padding=(1,4))
 
-def print_data(mode = "", s_value = -1, domain = "", lights = [], threads = ""):
+def print_data(mode:str = "", s_value:float = -1, domain:str = "", l_list:list = [], threads:str = "") -> Group:
 	'''Takes interesting data and creates a nice overview'''
 
 	mode_text = {	"on": 	"[gold1] On [/gold1]", 
@@ -55,7 +55,7 @@ def print_data(mode = "", s_value = -1, domain = "", lights = [], threads = ""):
 	bar_light = lambda x: Bar(1, x.position-x.radius, x.position+x.radius, color="gold1" if x.isOn() else "grey35")
 	l = ""
 	
-	for i in lights:
+	for i in l_list:
 		g.renderables.append(bar_light(i))
 		if i.on:
 			l += f"[white]{i.id}: {i.position}[/white] ── "
@@ -76,7 +76,7 @@ def print_data(mode = "", s_value = -1, domain = "", lights = [], threads = ""):
 live = Live(print_data(), auto_refresh=False, screen=True)
 live.start()
 
-def refresh(string = ""):
+def refresh(string:str = "") -> None:
 	'''Function to refresh the UI'''
 	global th
 	if string != "":
@@ -113,7 +113,8 @@ refresh("Not initiated")				# string with info about the threads
 ############### Debugging stuff ##################
 
 dir = 1
-def pong_step():
+def pong_step() -> None:
+	'''Function to change the sensor value of the debug-sensor'''
 	x = sensor.get_proximity()
 	if not debug:
 		Exception("Not implemented")
@@ -124,7 +125,8 @@ def pong_step():
 		dir = 1
 	sensor.__set__(x+0.04*dir)
 
-def debug_input(string):
+def debug_input(string:str = "") -> None:
+	'''Function to handle the debug specific input'''
 	refresh()
 	if string == "pong":
 		pong_bool.set(not pong_bool.get())
@@ -139,9 +141,11 @@ def debug_input(string):
 		except:
 			pass
 
+############### Functions ##################
+
 ### loop ###
 
-def loop(fkt, loop=False,delay=1):
+def loop(fkt:function, loop:change_notifier=False,delay:float=1) -> None:
 	'''Function to loop a function with specific delay and stop condition'''
 	while loop.get():
 		fkt()
@@ -150,7 +154,7 @@ def loop(fkt, loop=False,delay=1):
 
 #### Sensor ####
 
-def read_sensor():
+def read_sensor() -> None:
 	'''Reads data from sensor and updates UI if necessary'''
 	if s.set(sensor.get_proximity()) and m.get() == "auto":
 		calc_lights(s.get())
@@ -159,7 +163,7 @@ refresh("Sensor initiated")
 
 #### Lights ####
 
-def calc_lights(pos = -1):
+def calc_lights(pos = -1) -> None:
 	'''Recalculates all lights and updates the UI'''
 	for light in lights.lights:
 		light.illuminate(pos)
@@ -170,7 +174,7 @@ refresh("Lights initiated")
 #### MQTT and mode checker ####
 
 d = f"broker: {mqtt.broker()}, topic: {mqtt.pub_topic()}"
-def check_mode():
+def check_mode() -> None:
 	'''Gets mode from file, updated the operating mode of the app and sends the mode via mqtt'''
 	# compare mode from file with current mode
 	lock.acquire()
@@ -188,7 +192,7 @@ refresh("MQTT initiated")
 
 ### Functionality ###
 
-def change_operation(new_mode):
+def change_operation(new_mode:str) -> None:
 	'''Changes the operating mode of the server'''
 	if new_mode == "auto":
 		automatic.set(True)
