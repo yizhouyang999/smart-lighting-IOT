@@ -13,7 +13,7 @@ public class ModeDialog extends AppCompatDialogFragment {
         AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
         builder.setTitle("Information")
                 .setCancelable(false)
-                .setMessage("Waiting for response from server, the Light Status will update if succeed.");
+                .setMessage("Waiting for response from server, this window will disappear if succeed.");
         return builder.create();
     }
 }
