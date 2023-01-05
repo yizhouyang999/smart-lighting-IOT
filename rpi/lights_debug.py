@@ -1,11 +1,12 @@
 lights = []
+comfort = 0.05
+
 class Light():
-    def __init__(self, id, position, radius, on = False, comfort = 0.05) -> None:
+    def __init__(self, id, position, radius, on = False) -> None:
         self.id = id
         self.position = position
         self.radius = radius
         self.on = on
-        self.comfort = comfort
         
     def isOn(self) -> bool:
         """Returns True if the light is on, False otherwise."""
@@ -19,9 +20,12 @@ class Light():
         else:
             self.on = state == "On"
         
-
     def illuminate(self, pos:float) -> None:
-        should_be_on = self.position - self.radius < pos + self.comfort and pos - self.comfort < self.position + self.radius
+        global comfort
+        p = self.position
+        r = self.radius
+        c = comfort
+        should_be_on = p - r < pos + c and pos - c < p + r
         self.turn("On" if should_be_on else "Off")
 
 # generates all lights from the lights.txt file and puts them in the lights list
@@ -29,9 +33,11 @@ with open("lights.txt") as f:
     for line in f:
         if line[0] in ["#", "\n"]:
             continue
-        id, position, radius = line.split()
-        lights.append(Light(id, float(radius), float(position)))
-
+        try:
+            id, position, radius = line.split()
+            lights.append(Light(id, float(radius), float(position)))
+        except:
+            pass
 
 def getLightsState() -> None:
     return

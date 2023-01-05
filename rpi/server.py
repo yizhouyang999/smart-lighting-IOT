@@ -16,7 +16,7 @@ import mode
 
 # own modules with debug alternatives
 debug = len(sys.argv)>1 and sys.argv[1] == "debug"
-if debug:	import sensor_debug as 	sensor;	import lights_debug as lights
+if debug:	import sensor_debug	as 	sensor;	import lights_debug as lights
 else: 		import sensor 		as	sensor;	import lights		as lights
 
 
@@ -33,7 +33,7 @@ panel_title = Panel("[blue]Smart Hallway Lighting",
 
 def print_data(mode:str = "", s_value:float = -1, domain:str = "", l_list:list = [], threads:str = "") -> Group:
 	'''Takes interesting data and creates a nice overview'''
-
+	c = lights.comfort
 	mode_text = {	"on": 	"[gold1] On [/gold1]", 
 					"off": 	"[grey35] Off [/grey35]", 
 					"auto": "[red] Auto [/red]"}.get(mode,mode)
@@ -45,7 +45,7 @@ def print_data(mode:str = "", s_value:float = -1, domain:str = "", l_list:list =
 						Panel(threads, 			title= "Threads", 	style = "grey35")
 						], expand=True),
 			Panel(	Group(	Bar(1, s_value-0.01, s_value+0.01), 
-							Bar(1, s_value-0.05, s_value+0.05, color="grey35")), 
+							Bar(1, s_value-c, s_value+c, color="grey35")), 
 					title="[white]Sensor", 
 					subtitle=f"[white]Value: {s_value:.2f}", 
 					subtitle_align="right",
@@ -186,7 +186,7 @@ def check_mode() -> None:
 		refresh()
 	# Send mode via mqtt
 	mqtt.publish(m.get())
-	mqtt.log("Mode: " + str(m.get()))
+	mqtt.log(f"Mode: '{m.get()}'")
 	lights.getLightsState()
 
 refresh("MQTT initiated")
@@ -249,11 +249,11 @@ if __name__ == "__main__":
 
 	# delay and loop condition for MQTT and mode checker
 	mode_checking = change_notifier(True)
-	checking_delay = 1
+	checking_delay = 0.5
 
 	# delay and loop condition for pong in debug mode
 	pong_bool = change_notifier(False)
-	pong_delay = 1
+	pong_delay = 0.2
 
 	# list for all threads to terminate the threads properly at the end
 	threads = []

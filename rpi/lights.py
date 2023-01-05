@@ -6,22 +6,20 @@ privkey =   "ZUXEVEGA9USTAZEWRETHAQUBUR69U6EF" # Private Key
 token =     "8aba8385b6f65e0f7bf274e5e673f04b05d541a1e" # Token
 secret =    "ecd6a7203c64ec98469df1da577eeff3" # Token Secret
 
-
-
 lights = []
+comfort = 0.05
+
 class Light:
-    def __init__(self, id, position, radius, on = False, comfort = 0.05) -> None:
+    def __init__(self, id, position, radius, on = False) -> None:
         '''Initiates a light with id, position and radius'''
         self.id = id
         self.radius = radius
         self.position = position
         self.on = on
-        self.comfort = comfort
     
     def isOn(self) -> bool:
         return self.on
 
-    
     def turn(self, state:str) -> None:
         # make shure state is "On" or "Off"
         if state not in ["On", "Off"]:
@@ -46,7 +44,11 @@ class Light:
         responseData = response.json()  
 
     def illuminate(self, pos:float) -> None:
-        should_be_on = self.position - self.radius < pos + self.comfort and pos - self.comfort < self.position + self.radius
+        global comfort
+        p = self.position
+        r = self.radius
+        c = comfort
+        should_be_on = p - r < pos + c and pos - c < p + r
         self.turn("On" if should_be_on else "Off")
 
 def getLightsState() -> None:
@@ -75,6 +77,5 @@ with open("lights.txt") as f:
             continue
         id, position, radius = line.split()
         lights.append(Light(id, float(radius), float(position)))
-
 
 getLightsState()
