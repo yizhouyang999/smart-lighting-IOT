@@ -44,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     Button btnUpdateTemp = null;
     Switch lightMode = null;
 
+    String current_mode="";
+    Boolean first_time=true;
     ModeDialog modeDialog=new ModeDialog();
 
     /**
@@ -121,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
                 StrictMode.ThreadPolicy.Builder()
                 .permitAll().build();
         StrictMode.setThreadPolicy(policy);
-        String hostname = "130.237.177.205";
+        String hostname = "130.237.177.207";
         String username = "pi";
         String password = "IoT@2021";
 
@@ -160,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -168,6 +171,8 @@ public class MainActivity extends AppCompatActivity {
         lightMode = (Switch) findViewById(R.id.smartLightButton);
         btnUpdateTemp = (Button) findViewById(R.id.btnUpdateTemp);
 
+
+//        new Async().execute();
         /**
          * Connect and get from Mqtt broker
          */
@@ -178,10 +183,10 @@ public class MainActivity extends AppCompatActivity {
                 if (reconnect) {
                     System.out.println("Reconnected to : " + serverURI);
                     // Re-subscribe as we lost it due to new session
-                    subscribe("iotlab/test");
+                    subscribe("iot_project");
                 } else {
                     System.out.println("Connected to: " + serverURI);
-                    subscribe("iotlab/test");
+                    subscribe("iot_project");
                 }
             }
             @Override
@@ -192,9 +197,12 @@ public class MainActivity extends AppCompatActivity {
             public void messageArrived(String topic, MqttMessage message) throws
                     Exception {
                 String newMessage = new String(message.getPayload());
-                //System.out.println("Incoming message: " + newMessage);
-                String[] values = newMessage.split(",");
-                System.out.println("Lux: " + values[0] + "\t Prox: "+values[1]);
+                System.out.println(newMessage);
+                if(current_mode.equals(newMessage)){
+                    modeDialog.dismiss();
+                }
+                setModeFromMqtt(newMessage);
+
             }
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
@@ -211,15 +219,19 @@ public class MainActivity extends AppCompatActivity {
                     lightMode.setChecked(true);
                 } else {
                     if (!lightMode.isChecked()) {
-//                        new AsyncTask<Integer, Void, Void>(){
-//                            @Override
-//                            protected Void doInBackground(Integer... params) {
-//                                // Add code to fetch data via SSH
-//                                run("python mode.py off");
-//                                return null;
-//                            }
-//                        }.execute(1);
+                        new AsyncTask<Integer, Void, Void>(){
+                            @Override
+                            protected Void doInBackground(Integer... params) {
+                                // Add code to fetch data via SSH
+                                run("python3 Documents/mode.py off");
+                                return null;
+                            }
+                        }.execute(1);
                         txv_temp_indoor.setText("off");
+                        current_mode="off";
+                        if(!first_time){
+                            modeDialog.show(getSupportFragmentManager(),"dialog");
+                        }
                     } else {
                         lightMode.setChecked(false);
                     }
@@ -239,37 +251,49 @@ public class MainActivity extends AppCompatActivity {
                         lightMode.setChecked(false);
                         showToastFailed();
                     } else {
-//                        new AsyncTask<Integer, Void, Void>(){
-//                            @Override
-//                            protected Void doInBackground(Integer... params) {
-//                                // Add code to fetch data via SSH
-//                                run("python mode.py auto");
-//                                return null;
-//                            }
-//                        }.execute(1);
+                        new AsyncTask<Integer, Void, Void>(){
+                            @Override
+                            protected Void doInBackground(Integer... params) {
+                                // Add code to fetch data via SSH
+                                run("python3 Documents/mode.py auto");
+                                return null;
+                            }
+                        }.execute(1);
                         txv_temp_indoor.setText("auto");
+                        current_mode="auto";
+                        if(!first_time){
+                            modeDialog.show(getSupportFragmentManager(),"dialog");
+                        }
                     }
                 } else {
                     if (!lightToggle.isChecked()) {
-//                        new AsyncTask<Integer, Void, Void>(){
-//                            @Override
-//                            protected Void doInBackground(Integer... params) {
-//                                // Add code to fetch data via SSH
-//                                run("python mode.py off");
-//                                return null;
-//                            }
-//                        }.execute(1);
+                        new AsyncTask<Integer, Void, Void>(){
+                            @Override
+                            protected Void doInBackground(Integer... params) {
+                                // Add code to fetch data via SSH
+                                run("python3 Documents/mode.py off");
+                                return null;
+                            }
+                        }.execute(1);
                         txv_temp_indoor.setText("off");
+                        current_mode="off";
+                        if(!first_time){
+                            modeDialog.show(getSupportFragmentManager(),"dialog");
+                        }
                     } else {
-//                        new AsyncTask<Integer, Void, Void>(){
-//                            @Override
-//                            protected Void doInBackground(Integer... params) {
-//                                // Add code to fetch data via SSH
-//                                run("python mode.py on");
-//                                return null;
-//                            }
-//                        }.execute(1);
+                        new AsyncTask<Integer, Void, Void>(){
+                            @Override
+                            protected Void doInBackground(Integer... params) {
+                                // Add code to fetch data via SSH
+                                run("python3 Documents/mode.py on");
+                                return null;
+                            }
+                        }.execute(1);
                         txv_temp_indoor.setText("on");
+                        current_mode="on";
+                        if(!first_time){
+                            modeDialog.show(getSupportFragmentManager(),"dialog");
+                        }
                     }
 
                 }
@@ -284,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // Add code
                 openLoginActivity();
-//                modeDialog.show(getSupportFragmentManager(),"dialog");
+
 
             }
         });
@@ -316,6 +340,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    /**
+     * the function show toast when user try to turn on auto without turon on light
+     */
     public void showToastFailed(){
         LayoutInflater inflater=getLayoutInflater();
         View layout=inflater.inflate(R.layout.mode_fail,(ViewGroup) findViewById(R.id.mode_fail_root));
@@ -327,9 +355,37 @@ public class MainActivity extends AppCompatActivity {
         toast.show();
     }
 
+
+    /**
+     * this function logout the user
+     */
     public void openLoginActivity() {
         Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);
+    }
+
+
+    /**
+     * this function change mode according to the mqtt response
+     * @param mode
+     */
+    public void setModeFromMqtt(String mode){
+        if(!first_time){
+            return;
+        }
+        if(mode.equals("auto")){
+            lightToggle.setChecked(true);
+            lightMode.setChecked(true);
+        }
+        else if(mode.equals("off")){
+            lightToggle.setChecked(false);
+            lightMode.setChecked(false);
+        }
+        else if(mode.equals("on")){
+            lightToggle.setChecked(true);
+            lightMode.setChecked(false);
+        }
+        first_time=false;
     }
 
 
