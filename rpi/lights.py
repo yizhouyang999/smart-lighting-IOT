@@ -1,16 +1,12 @@
-import requests, uuid, time#, json, hashlib
-# This is where to insert your generated API keys (http://api.telldus.com/keys)
-# define keys, tokens and secrets
-pubkey =    "FEHUVEW84RAFR5SP22RABURUPHAFRUNU" # Public Key
-privkey =   "ZUXEVEGA9USTAZEWRETHAQUBUR69U6EF" # Private Key
-token =     "8aba8385b6f65e0f7bf274e5e673f04b05d541a1e" # Token
-secret =    "ecd6a7203c64ec98469df1da577eeff3" # Token Secret
+import os
+import threading
+import logging
 
 lights = []
 comfort = 0.05
 
 class Light:
-    def __init__(self, id, position, radius, on = False) -> None:
+    def __init__(self, id, position, radius, on = "off") -> None:
         '''Initiates a light with id, position and radius'''
         self.id = id
         self.radius = radius
@@ -21,61 +17,28 @@ class Light:
         return self.on
 
     def turn(self, state:str) -> None:
-        # make shure state is "On" or "Off"
-        if state not in ["On", "Off"]:
-            raise ValueError("state must be either On or Off")
-
-        b = True if state == "On" else False
-
-        # return if light in correct state
-        if b == self.on:
-            return
-
-        self.on = b
-        localtime = time.localtime(time.time())
-        timestamp = str(time.mktime(localtime))
-        nonce = uuid.uuid4().hex
-        oauthSignature = (privkey + "%26" + secret)
-        response = requests.post(
-        url="https://api.telldus.com/device/turn"+state,
-        params={"id": self.id,},
-        headers={"Authorization": 'OAuth oauth_consumer_key="{pubkey}",oauth_nonce="{nonce}", oauth_signature="{oauthSignature}", oauth_signature_method="PLAINTEXT",oauth_timestamp="{timestamp}", oauth_token="{token}", oauth_version="1.0"'.format(pubkey=pubkey,nonce=nonce, oauthSignature=oauthSignature, timestamp=timestamp, token=token),},
-        )
-        responseData = response.json()  
-
+        if state == self.on:
+                       return
+        self.on = state
+        os.popen(f"tdtool --{state} {self.id}")
+       
     def illuminate(self, pos:float) -> None:
         global comfort
         p = self.position
         r = self.radius
         c = comfort
         should_be_on = p - r < pos + c and pos - c < p + r
-        self.turn("On" if should_be_on else "Off")
-
-def getLightsState() -> None:
-    '''Gets the state of the lights of the lights according to the tellstick'''
-    localtime = time.localtime(time.time())
-    timestamp = str(time.mktime(localtime))
-    nonce = uuid.uuid4().hex
-    oauthSignature = (privkey + "%26" + secret)
-    # GET-request
-    response = requests.get(
-        url="https://pa-api.telldus.com/json/devices/list",
-        params={"includeValues": "1",},
-        headers={"Authorization": 'OAuth oauth_consumer_key="{pubkey}",oauth_nonce="{nonce}", oauth_signature="{oauthSignature}", oauth_signature_method="PLAINTEXT",oauth_timestamp="{timestamp}", oauth_token="{token}", oauth_version="1.0"'.format(pubkey=pubkey,nonce=nonce, oauthSignature=oauthSignature, timestamp=timestamp, token=token),},
-        )
-    responseData = response.json()
-    with open("tellstick_data.txt", "w") as f:
-        f.write(response.text)
-
-    for d,l in [(d,l) for d in responseData['device'] for l in lights]:
-        if d['id'] == l.id:
-            l.on = d['state'] == 1
+        s = "on" if should_be_on else "off"
+        self.turn(s)
 
 with open("lights.txt") as f:
     for line in f:
-        if line[0] == "#":
+        if line[0] in ["#","\n"]:
             continue
-        id, position, radius = line.split()
-        lights.append(Light(id, float(radius), float(position)))
+        try:
+            id, r, p = line.split()
+            os.popen(f"tdtool --off {id}")
 
-getLightsState()
+            lights.append(Light(id, float(p), float(r)))
+        except:
+            pass

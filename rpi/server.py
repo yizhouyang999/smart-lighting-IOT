@@ -16,7 +16,7 @@ import mode
 
 # own modules with debug alternatives
 debug = len(sys.argv)>1 and sys.argv[1] == "debug"
-if debug:	import sensor_debug	as 	sensor;	import lights_debug as lights
+if debug:	import sensor 		as 	sensor;	import lights_debug as lights
 else: 		import sensor 		as	sensor;	import lights		as lights
 
 
@@ -52,7 +52,7 @@ def print_data(mode:str = "", s_value:float = -1, domain:str = "", l_list:list =
 					style="grey35"))
 
 	g = Group()
-	bar_light = lambda x: Bar(1, x.position-x.radius, x.position+x.radius, color="gold1" if x.isOn() else "grey35")
+	bar_light = lambda x: Bar(1, x.position-x.radius, x.position+x.radius, color="gold1" if x.isOn()=="on" else "grey35")
 	l = ""
 	
 	for i in l_list:
@@ -73,7 +73,7 @@ def print_data(mode:str = "", s_value:float = -1, domain:str = "", l_list:list =
 	return group_out
 
 # starts live preview in the console
-live = Live(print_data(), auto_refresh=False, screen=True)
+live = Live(print_data(), auto_refresh=False)#, screen=True)
 live.start()
 
 def refresh(string:str = "") -> None:
@@ -187,7 +187,6 @@ def check_mode() -> None:
 	# Send mode via mqtt
 	mqtt.publish(m.get())
 	mqtt.log(f"Mode: '{m.get()}'")
-	lights.getLightsState()
 
 refresh("MQTT initiated")
 
@@ -203,14 +202,8 @@ def change_operation(new_mode:str) -> None:
 		calc_lights(s.get())
 	else:
 		automatic.set(False)
-
-		if new_mode == "on":
-			for light in lights.lights:
-				light.turn("On")
-
-		elif new_mode == "off":
-			for light in lights.lights:
-				light.turn("Off")
+		for light in lights.lights:
+			light.turn(new_mode.lower())
 	refresh()
 
 ### input ###
@@ -239,7 +232,7 @@ refresh("Input initiated")
 refresh("Everything initiated")
 ############### Main  section ##################
 if __name__ == "__main__":
-	
+	mode.set("off")
 	# Threads
 	refresh("Setting up threads")
 

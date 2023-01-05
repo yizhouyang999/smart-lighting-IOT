@@ -15,10 +15,10 @@ class Light():
     def turn(self, state:str) -> None:
         """Turns the light On or Off. Accepts "On" or "Off" as arguments."""
         # make shure state is "On" or "Off"
-        if state not in ["On", "Off"]:
+        if state.lower() not in ["on", "off"]:
             raise ValueError("state must be either On or Off")
         else:
-            self.on = state == "On"
+            self.on = state == "0n"
         
     def illuminate(self, pos:float) -> None:
         global comfort
@@ -26,7 +26,7 @@ class Light():
         r = self.radius
         c = comfort
         should_be_on = p - r < pos + c and pos - c < p + r
-        self.turn("On" if should_be_on else "Off")
+        self.turn("on" if should_be_on else "off")
 
 # generates all lights from the lights.txt file and puts them in the lights list
 with open("lights.txt") as f:
@@ -34,10 +34,7 @@ with open("lights.txt") as f:
         if line[0] in ["#", "\n"]:
             continue
         try:
-            id, position, radius = line.split()
-            lights.append(Light(id, float(radius), float(position)))
+            id, r, p = line.split()
+            lights.append(Light(id, float(p), float(r)))
         except:
             pass
-
-def getLightsState() -> None:
-    return
