@@ -145,7 +145,7 @@ def debug_input(string:str = "") -> None:
 
 ### loop ###
 
-def loop(fkt:function, loop:change_notifier=False,delay:float=1) -> None:
+def loop(fkt, loop:change_notifier=False,delay:float=1) -> None:
 	'''Function to loop a function with specific delay and stop condition'''
 	while loop.get():
 		fkt()
@@ -187,6 +187,7 @@ def check_mode() -> None:
 	# Send mode via mqtt
 	mqtt.publish(m.get())
 	mqtt.log("Mode: " + str(m.get()))
+	lights.getLightsState()
 
 refresh("MQTT initiated")
 
