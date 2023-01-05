@@ -162,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -170,6 +171,8 @@ public class MainActivity extends AppCompatActivity {
         lightMode = (Switch) findViewById(R.id.smartLightButton);
         btnUpdateTemp = (Button) findViewById(R.id.btnUpdateTemp);
 
+
+//        new Async().execute();
         /**
          * Connect and get from Mqtt broker
          */
