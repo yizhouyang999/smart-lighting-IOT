@@ -16,7 +16,7 @@ import mode
 
 # own modules with debug alternatives
 debug = len(sys.argv)>1 and sys.argv[1] == "debug"
-if debug:	import sensor 		as 	sensor;	import lights_debug as lights
+if debug:	import sensor_debug	as 	sensor;	import lights_debug as lights
 else: 		import sensor 		as	sensor;	import lights		as lights
 
 
@@ -57,8 +57,10 @@ def print_data(mode:str = "", s_value:float = -1, domain:str = "", l_list:list =
 	
 	for i in l_list:
 		g.renderables.append(bar_light(i))
-		if i.on:
-			l += f"[white]{i.id}: {i.position}[/white] ── "
+		if i.on == "on":
+			l += f"[gold1]{i.id}: {i.position}[/gold1] ── "
+		else:
+			l += f"[grey35]{i.id}: {i.position}[/grey35] ── "
 	
 	group_out.renderables.append(Panel(	g, 
 										title="[white]Lights[/white]", 
@@ -73,7 +75,7 @@ def print_data(mode:str = "", s_value:float = -1, domain:str = "", l_list:list =
 	return group_out
 
 # starts live preview in the console
-live = Live(print_data(), auto_refresh=False)#, screen=True)
+live = Live(print_data(), auto_refresh=False, screen=True)
 live.start()
 
 def refresh(string:str = "") -> None:
@@ -112,19 +114,21 @@ refresh("Not initiated")				# string with info about the threads
 
 ############### Debugging stuff ##################
 
-dir = 1
+direction = 1
+# simulate movement at the sensor
 def pong_step() -> None:
 	'''Function to change the sensor value of the debug-sensor'''
 	x = sensor.get_proximity()
 	if not debug:
 		Exception("Not implemented")
-	global dir
+	global direction
 	if x+0.05 > 1:
-		dir = -1
+		direction = -1
 	elif x-0.05 < 0:
-		dir = 1
-	sensor.__set__(x+0.04*dir)
+		direction = 1
+	sensor.__set__(x+0.04*direction)
 
+# user input for debugging
 def debug_input(string:str = "") -> None:
 	'''Function to handle the debug specific input'''
 	refresh()
@@ -148,8 +152,10 @@ def debug_input(string:str = "") -> None:
 def loop(fkt, loop:change_notifier=False,delay:float=1) -> None:
 	'''Function to loop a function with specific delay and stop condition'''
 	while loop.get():
-		fkt()
-		time.sleep(delay)
+		# make sleep a thread so it sleeps while the function is running and not after
+		t = threading.Thread(target=time.sleep, args=([delay])); t.start()
+
+		fkt(); t.join()
 
 
 #### Sensor ####
@@ -159,8 +165,6 @@ def read_sensor() -> None:
 	if s.set(sensor.get_proximity()) and m.get() == "auto":
 		calc_lights(s.get())
 
-refresh("Sensor initiated")
-
 #### Lights ####
 
 def calc_lights(pos = -1) -> None:
@@ -168,8 +172,6 @@ def calc_lights(pos = -1) -> None:
 	for light in lights.lights:
 		light.illuminate(pos)
 	refresh()
-
-refresh("Lights initiated")
 
 #### MQTT and mode checker ####
 
@@ -225,60 +227,58 @@ def user_input():
 			continue
 		
 		refresh()
-		
-refresh("Input initiated")
-
 
 refresh("Everything initiated")
+
 ############### Main  section ##################
-if __name__ == "__main__":
-	mode.set("off")
-	# Threads
-	refresh("Setting up threads")
 
-	# delay and loop condition for automatic mode
-	automatic = change_notifier(False)
-	automatic_delay = 0.1
 
-	# delay and loop condition for MQTT and mode checker
-	mode_checking = change_notifier(True)
-	checking_delay = 0.5
+mode.set("off")
+# Threads
+refresh("Setting up threads")
 
-	# delay and loop condition for pong in debug mode
-	pong_bool = change_notifier(False)
-	pong_delay = 0.2
+# delay and loop condition for automatic mode
+automatic = change_notifier(False)
+automatic_delay = 0.1
 
-	# list for all threads to terminate the threads properly at the end
-	threads = []
+# delay and loop condition for MQTT and mode checker
+mode_checking = change_notifier(True)
+checking_delay = 0.5
 
-	# initiate MQTT and mode checker thread
-	ckecker = threading.Thread(target=loop, args=(check_mode, mode_checking, checking_delay))
-	threads.append(ckecker)
+# delay and loop condition for pong in debug mode
+pong_bool = change_notifier(False)
+pong_delay = 0.2
 
-	# Start thread
-	refresh("Starting threads")
-	ckecker.start()
+# list for all threads to terminate the threads properly at the end
+threads = []
 
-	################ Start normal operation mode  ################
-	
-	user_input()
-	
+# initiate MQTT and mode checker thread
+ckecker = threading.Thread(target=loop, args=(check_mode, mode_checking, checking_delay))
+threads.append(ckecker)
 
-	################ end ################
-	refresh("Stopping threads")
-	# set all loop conditions to False to stop all threads
-	mode_checking.set(False)
-	automatic.set(False)
-	pong_bool.set(False)
+# Start thread
+refresh("Starting threads")
+ckecker.start()
 
-	# wait for threads to stop
-	for t in threads:
-		t.join()
+################ Start normal operation mode  ################
 
-	refresh("Threads stopped")
+user_input()
 
-	# Disconnect from MQTT
-	mqtt.end()
+################ end ################
+refresh("Stopping threads")
+# set all loop conditions to False to stop all threads
+mode_checking.set(False)
+automatic.set(False)
+pong_bool.set(False)
 
-	# return to normal console
-	live.stop()
+# wait for threads to stop
+for t in threads:
+	t.join()
+
+refresh("Threads stopped")
+
+# Disconnect from MQTT
+mqtt.end()
+
+# return to normal console
+live.stop()

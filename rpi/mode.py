@@ -1,10 +1,10 @@
-import sys
+import sys, os
+p = os.path.dirname(__file__)+"/mode.txt"
 def set(m:str) -> None:
-    with open("/home/pi/Documents/mode.txt","w") as file:
+    with open(p,"w") as file:
         file.write(m.lower())
-
 def get() -> str:
-    with open("/home/pi/Documents/mode.txt","r") as file:
+    with open(p,"r") as file:
         return file.read().lower()
 
 if __name__ == "__main__":
