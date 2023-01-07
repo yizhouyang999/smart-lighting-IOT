@@ -10,14 +10,17 @@ class Light:
         self.on = on
     
     def isOn(self) -> bool:
+        '''Returns "on" if light is on, "off" if light is off'''
         return self.on
 
     def turn(self, state:str) -> None:
+        '''Turns the light on or off'''
         if state == self.on:
                        return
         self.on = state
        
     def illuminate(self, pos:float) -> None:
+        '''Turns the light on or off depending on the position of the person'''
         global comfort
         p = self.position
         r = self.radius

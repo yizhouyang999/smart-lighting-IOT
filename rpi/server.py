@@ -16,8 +16,8 @@ import mode
 
 # own modules with debug alternatives
 debug = len(sys.argv)>1 and sys.argv[1] == "debug"
-if debug:	import sensor_debug	as 	sensor;	import lights_debug as lights
-else: 		import sensor 		as	sensor;	import lights		as lights
+if debug:	import sensor_debug	as 	sensor;	import lights_debug as lights; mqtt.logger.setLevel("INFO")
+else: 		import sensor 		as	sensor;	import lights		as lights; mqtt.logger.setLevel("ERROR")
 
 
 
@@ -188,8 +188,7 @@ def check_mode() -> None:
 		refresh()
 	# Send mode via mqtt
 	mqtt.publish(m.get())
-	mqtt.log(f"Mode: '{m.get()}'")
-
+	
 refresh("MQTT initiated")
 
 ### Functionality ###
